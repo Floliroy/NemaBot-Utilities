@@ -68,7 +68,7 @@ bot.on("interactionCreate", async function(interaction){
         const nbWinners = interaction.options.getInteger("nb") ? interaction.options.getInteger("nb") : 1
         const messageId = interaction.options.getString("message")
 
-        const messageReactions = await bot.channels.cache.get(discordId.annonces).messages.fetch(messageId)
+        const messageReactions = await bot.channels.cache.get("701153434115637418").messages.fetch(messageId)
         
         let reactions = await messageReactions.reactions.resolve("🥚").users.fetch()
         let totalReactions = reactions
