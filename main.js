@@ -30,15 +30,15 @@ const createCommands = [
 	new SlashCommandBuilder().setName("nemacup").setDescription("Pour avoir le lien du site de la NémaCup !"),
 	new SlashCommandBuilder().setName("site").setDescription("Pour avoir le lien du site de Némaïdès !"),
     new SlashCommandBuilder().setName("tirage")
-        .setDescription("Fait un tirage au sort sur un message donné (seulement utilisable par Némaïdès)")
+        .setDescription("Fait un tirage au sort sur un message donné des réactions 🥚 (seulement utilisable par Némaïdès)")
         .addStringOption(option => option.setName("message")
             .setDescription("ID du message sur lequel faire un tirage au sort")
             .setRequired(true)
         )
         .addIntegerOption(option => option.setName("nb")
-            .setDescription("Nombre de gagnants (1 si non donné)")
+            .setDescription("Nombre de gagnants")
             .setMinValue(1)
-            .setRequired(false)
+            .setRequired(true)
         )
         .setDefaultPermission(false)
 ].map(command => command.toJSON())
@@ -65,7 +65,6 @@ bot.on("interactionCreate", async function(interaction){
         interaction.deferReply()
         interaction.deleteReply()
 
-        console.log(interaction.options.getInteger("nb"))
         const nbWinners = interaction.options.getInteger("nb") ? interaction.options.getInteger("nb") : 1
         const messageId = interaction.options.getString("message")
 
