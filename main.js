@@ -36,7 +36,7 @@ const createCommands = [
             .setRequired(true)
         )
         .addIntegerOption(option => option.setName("nb")
-            .setDescription("Nombre de gagnants")
+            .setDescription("Nombre de gagnants a tirer au sort")
             .setMinValue(1)
             .setRequired(true)
         )
