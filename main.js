@@ -65,6 +65,7 @@ bot.on("interactionCreate", async function(interaction){
         interaction.deferReply()
         interaction.deleteReply()
 
+        console.log(interaction.options.getInteger("nb"))
         const nbWinners = interaction.options.getInteger("nb") ? interaction.options.getInteger("nb") : 1
         const messageId = interaction.options.getString("message")
 
