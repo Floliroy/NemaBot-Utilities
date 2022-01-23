@@ -98,3 +98,10 @@ bot.on("interactionCreate", async function(interaction){
         interaction.channel.send(answer)
     }
 })
+
+/**
+ * To avoid crashes
+ */
+process.on('uncaughtException', (err) => {
+    console.log(err)
+})
