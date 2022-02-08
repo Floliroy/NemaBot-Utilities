@@ -35,7 +35,7 @@ async function sendConfig(channel, bot){
     channels.sort((a, b) => b.name.startsWith("annonce") - a.name.startsWith("annonce") )
     const channelsOptions = new Array()
     for(let i=0 ; i<channels.size ; i++){
-        if(i == 24) break;
+        if(i == 25) break;
         channelsOptions.push({label: channels.at(i).name, value: channels.at(i).id})
     }
     
