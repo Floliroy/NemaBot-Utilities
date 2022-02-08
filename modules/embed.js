@@ -32,6 +32,8 @@ async function sendConfig(channel, bot){
     )
     let channels = await channel.guild.channels.fetch()
     channels = channels.filter(chan => chan.isText() )
+    channels.sort((a, b) => b.name.startsWith("bla-bla") - a.name.startsWith("bla-bla") )
+    channels.sort((a, b) => b.name.startsWith("sutom") - a.name.startsWith("sutom") )
     channels.sort((a, b) => b.name.startsWith("annonce") - a.name.startsWith("annonce") )
     const channelsOptions = new Array()
     for(let i=0 ; i<channels.size ; i++){
