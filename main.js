@@ -3,12 +3,15 @@ require("dotenv").config()
 /**
  * Init discord bot
  */
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { Client, Intents } = require("discord.js")
+const { REST } = require('@discordjs/rest')
+const { Routes } = require('discord-api-types/v9')
+const { Client, Intents, DMChannel } = require("discord.js")
 const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] })
 bot.login(process.env.DISCORD_TOKEN)
+
+const EmbedCreator = require('./modules/embed')
+const tirage = require('./modules/tirage')
+const commandsFile = require('./modules/commands')
  
 /**
  * When bot start
@@ -16,35 +19,26 @@ bot.login(process.env.DISCORD_TOKEN)
 bot.once("ready", async function(){
     console.log(`Démmarage en tant que ${bot.user.tag}`)
 
-    bot.guilds.cache.get(process.env.DISCORD_GUILD)?.commands.fetch().then(function(commands){
-        const command = commands.find(c => c.name == "tirage")
-        command.permissions.set({ permissions })
+    bot.user.setPresence({activities: [{type: "WATCHING", name: "NemaidesTFT", url: "https://www.twitch.tv/nemaidestft"}]})
+
+    bot.guilds.cache.get(process.env.DISCORD_GUILD)?.commands.fetch().then(async function(commands){
+        let command = commands.find(c => c.name == "tirage")
+        await command.permissions.set({ permissions: permissions })
+        command = commands.find(c => c.name == "embed")
+        await command.permissions.set({ permissions: permissions.concat(permissionsWithRole) })
     })
 })
  
 /**
  * Register commands
  */
-const createCommands = [
-	new SlashCommandBuilder().setName("nemacards").setDescription("Pour avoir le lien du site des NémaCards !"),
-	new SlashCommandBuilder().setName("nemacup").setDescription("Pour avoir le lien du site de la NémaCup !"),
-	new SlashCommandBuilder().setName("site").setDescription("Pour avoir le lien du site de Némaïdès !"),
-    new SlashCommandBuilder().setName("tirage")
-        .setDescription("Fait un tirage au sort sur un message donné des réactions 🥚 (seulement utilisable par Némaïdès)")
-        .addStringOption(option => option.setName("message")
-            .setDescription("ID du message sur lequel faire un tirage au sort")
-            .setRequired(true)
-        )
-        .addIntegerOption(option => option.setName("nb")
-            .setDescription("Nombre de gagnants a tirer au sort")
-            .setMinValue(1)
-            .setRequired(true)
-        )
-        .setDefaultPermission(false)
-].map(command => command.toJSON())
+const createCommands = commandsFile.map(command => command.toJSON())
 const permissions = [
-	{ id: "112632359207108608", type: "USER", permission: true },
-	{ id: "264135122754732042", type: "USER", permission: true }
+	{ id: "112632359207108608", type: "USER", permission: true }, //Floliroy
+	{ id: "264135122754732042", type: "USER", permission: true }  //Némaïdès
+]
+const permissionsWithRole = [
+	{ id: "701101815437197343", type: "ROLE", permission: true }  //Admin
 ]
 const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN)
 rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT, process.env.DISCORD_GUILD), { body: createCommands })
@@ -53,49 +47,42 @@ rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT, process.env
  * Answering commands
  */
 bot.on("interactionCreate", async function(interaction){
-	if(!interaction.isCommand()){ return }
+	if(interaction.isCommand()){
 
-    if(interaction.commandName == "nemacards"){
-		await interaction.reply("https://cards.nemaides.fr")
-	}else if(interaction.commandName == "nemacup"){
-		await interaction.reply("https://cup.nemaides.fr")
-    }else if(interaction.commandName == "site"){
-		await interaction.reply("https://nemaides.fr")
-    }else if(interaction.commandName == "tirage"){
-        interaction.deferReply()
-        interaction.deleteReply()
-
-        const nbWinners = interaction.options.getInteger("nb") ? interaction.options.getInteger("nb") : 1
-        const messageId = interaction.options.getString("message")
-
-        const messageReactions = await bot.channels.cache.get("701153434115637418").messages.fetch(messageId)
-        
-        let reactions = await messageReactions.reactions.resolve("🥚").users.fetch()
-        let totalReactions = reactions
-        while(reactions.size >= 100){
-            reactions = await messageReactions.reactions.resolve("🥚").users.fetch({
-                after: reactions.lastKey()
-            })
-            totalReactions.concat(reactions)
-        }
-        
-        let winners = new Array()
-        for(let i=0 ; i<nbWinners ; i++){
-            let winner
-            do{
-                winner = totalReactions.randomKey()
-            }while(winners.includes(winner))
-            winners.push(winner)
+        if(interaction.commandName == "nemacards"){
+            await interaction.reply("https://cards.nemaides.fr")
+        }else if(interaction.commandName == "nemacup"){
+            await interaction.reply("https://cup.nemaides.fr")
+        }else if(interaction.commandName == "site"){
+            await interaction.reply("https://nemaides.fr")
+        }else if(interaction.commandName == "tirage"){
+            tirage(interaction, bot)
+        }else if(interaction.commandName == "embed"){
+            EmbedCreator.sendInitEmbed(interaction, bot)
         }
 
-        let answer = "Bravo à : "
-        for(const winner of winners){
-            answer += `<@${winner}>, `
-        }
-        answer = answer.substring(0, answer.length - 2)
-        answer += winners.length > 1 ? " vous avez gagné !" : " tu as gagné !"
+    }else if(interaction.isSelectMenu()){
 
-        interaction.channel.send(answer)
+        if(interaction.customId == "nemabot-color"){
+            EmbedCreator.setColor(interaction, bot)
+        }else if(interaction.customId == "nemabot-send"){
+            EmbedCreator.sendFinal(interaction, bot)
+        }
+
+    }else if(interaction.isButton()){
+
+        if(interaction.customId.startsWith("nemabot-") && interaction.channelId == EmbedCreator.getChannelId() && interaction.user.id == EmbedCreator.getAuthorId()){
+            EmbedCreator.sendConfigAction(interaction, bot)
+        }
+
+    }
+})
+
+bot.on("messageCreate", async function(message){
+    if(message.author.bot || message.channel instanceof DMChannel) return
+
+    if(EmbedCreator.getActionEnCours() && message.channelId == EmbedCreator.getChannelId() && message.author.id == EmbedCreator.getAuthorId()){
+        EmbedCreator.execAction(message, bot)
     }
 })
 
