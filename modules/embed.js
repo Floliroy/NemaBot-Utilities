@@ -14,13 +14,14 @@ async function sendConfig(channel, bot){
     const config = new MessageEmbed()
         .setTitle("Configuration du Message Embed")
         .setColor("BLURPLE")
-        .setDescription("Choisis l'action que tu souhaites effectuer :\n*Un message ne peut pas avoir une image ET une icone ...*")
+        .setDescription("Choisis l'action que tu souhaites effectuer :\n\n*Un message ne peut pas avoir une image **ET** une icone ...*")
         .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
 
     const actionRowButtons = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-title").setLabel("Modif Titre").setStyle("PRIMARY"),
         new MessageButton().setCustomId("nemabot-description").setLabel(`${embed.description != "" ? "Ajout": "Modif"} Description`).setStyle("PRIMARY"),
-        new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SECONDARY")
+        new MessageButton().setCustomId("nemabot-field").setLabel("Ajout d'un Champ").setStyle("SECONDARY"),
+        new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SUCESS")
     )
     const actionRowButtonsTwo = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-image").setLabel("Ajout Image").setStyle("PRIMARY"),
@@ -122,10 +123,14 @@ module.exports = class EmbedCreator{
             config = new MessageEmbed().setTitle("Configuration de l'URL").setColor("BLURPLE").setDescription("Tapes le lien vers lequel mènera un clic sur le titre !")
                 .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
         }else if(actionEnCours == "nemabot-image"){
-            config = new MessageEmbed().setTitle("Configuration de l'Image").setColor("BLURPLE").setDescription("Tapes le lien de l'image principale du message !\nSi ton image ne s'affiche pas essaye de l'héberger vers imgbb / postimages / ...")
+            config = new MessageEmbed().setTitle("Configuration de l'Image").setColor("BLURPLE").setDescription("Tapes le lien de l'image principale du message !\n\n*Si ton image ne s'affiche pas essaye de l'héberger vers imgbb / postimages / ...*")
                 .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
         }else if(actionEnCours == "nemabot-icon"){
-            config = new MessageEmbed().setTitle("Configuration de l'Icone").setColor("BLURPLE").setDescription("Tapes le lien de la petite icone servant d'icone au message !\nSi ton image ne s'affiche pas essaye de l'héberger vers imgbb / postimages / ...")
+            config = new MessageEmbed().setTitle("Configuration de l'Icone").setColor("BLURPLE").setDescription("Tapes le lien de la petite icone servant d'icone au message !\n\n*Si ton image ne s'affiche pas essaye de l'héberger vers imgbb / postimages / ...*")
+                .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
+        }else if(actionEnCours == "nemabot-field"){
+            config = new MessageEmbed().setTitle("Configuration d'un Champ").setColor("BLURPLE").setDescription("Tapes ton champ de cette manière :\nNom du Champ;;Valeur du Champ\n\nExemple d'un champ :")
+                .addField("Nom du Champ", "Valeur du Champ\n\n*Permet de faire des sous parties par exemple*")
                 .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
         }else{
             return interaction.deleteReply()
@@ -150,6 +155,12 @@ module.exports = class EmbedCreator{
             embed.setImage(message.content)
         }else if(actionEnCours == "nemabot-icon"){
             embed.setThumbnail("https://nemaides.fr/logo.png")
+        }else if(actionEnCours == "nemabot-field"){
+            const args = message.content.split(";;")
+            const name = args[0]
+            args.shift()
+            const value = args.join(";;")
+            embed.addField(name, value)
         }else if(actionEnCours == "nemabot-send"){
             message.values = new Array(message.content)
             return this.sendFinal(message, bot)
