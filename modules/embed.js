@@ -129,7 +129,7 @@ module.exports = class EmbedCreator{
             config = new MessageEmbed().setTitle("Configuration de l'Icone").setColor("BLURPLE").setDescription("Tapes le lien de la petite icone servant d'icone au message !\n\n*Si ton image ne s'affiche pas essaye de l'héberger vers imgbb / postimages / ...*")
                 .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
         }else if(actionEnCours == "nemabot-field"){
-            config = new MessageEmbed().setTitle("Configuration d'un Champ").setColor("BLURPLE").setDescription("Tapes ton champ de cette manière :\nNom du Champ;;Valeur du Champ\n\nExemple d'un champ :")
+            config = new MessageEmbed().setTitle("Configuration d'un Champ").setColor("BLURPLE").setDescription("Tapes ton champ de cette manière :\n`Nom du Champ;;Valeur du Champ`\n\nExemple d'un champ :")
                 .addField("Nom du Champ", "Valeur du Champ\n\n*Permet de faire des sous parties par exemple*")
                 .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
         }else{
