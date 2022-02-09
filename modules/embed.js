@@ -20,7 +20,7 @@ async function sendConfig(channel, bot){
     const actionRowButtons = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-title").setLabel("Modif Titre").setStyle("PRIMARY"),
         new MessageButton().setCustomId("nemabot-description").setLabel(`${embed.description != "" ? "Ajout": "Modif"} Description`).setStyle("PRIMARY"),
-        new MessageButton().setCustomId("nemabot-field").setLabel("Ajout d'un Champ").setStyle("SECONDARY"),
+        new MessageButton().setCustomId("nemabot-field").setLabel("Ajout Champ").setStyle("SECONDARY"),
         new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SUCCESS")
     )
     const actionRowButtonsTwo = new MessageActionRow().addComponents(
