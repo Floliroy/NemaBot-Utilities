@@ -14,14 +14,14 @@ async function sendConfig(channel, bot){
     const config = new MessageEmbed()
         .setTitle("Configuration du Message Embed")
         .setColor("BLURPLE")
-        .setDescription("Choisis l'action que tu souhaites effectuer :\n\n*Un message ne peut pas avoir une image ET une icone ...*")
+        .setDescription("Choisis l'action que tu souhaites effectuer :\n\n*Un message ne peut pas avoir une image **ET** une icone ...*")
         .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
 
     const actionRowButtons = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-title").setLabel("Modif Titre").setStyle("PRIMARY"),
         new MessageButton().setCustomId("nemabot-description").setLabel(`${embed.description != "" ? "Ajout": "Modif"} Description`).setStyle("PRIMARY"),
         new MessageButton().setCustomId("nemabot-field").setLabel("Ajout d'un Champ").setStyle("SECONDARY"),
-        new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SUCESS")
+        new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SUCCESS")
     )
     const actionRowButtonsTwo = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-image").setLabel("Ajout Image").setStyle("PRIMARY"),
