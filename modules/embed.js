@@ -14,15 +14,18 @@ async function sendConfig(channel, bot){
     const config = new MessageEmbed()
         .setTitle("Configuration du Message Embed")
         .setColor("BLURPLE")
-        .setDescription("Choisis l'action que tu souhaites effectuer :")
+        .setDescription("Choisis l'action que tu souhaites effectuer :\n*Un message ne peut pas avoir une image ET une icone ...*")
         .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
 
     const actionRowButtons = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-title").setLabel("Modif Titre").setStyle("PRIMARY"),
         new MessageButton().setCustomId("nemabot-description").setLabel(`${embed.description != "" ? "Ajout": "Modif"} Description`).setStyle("PRIMARY"),
-        new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SECONDARY"),
+        new MessageButton().setCustomId("nemabot-url").setLabel("Ajout URL").setStyle("SECONDARY")
+    )
+    const actionRowButtonsTwo = new MessageActionRow().addComponents(
         new MessageButton().setCustomId("nemabot-image").setLabel("Ajout Image").setStyle("PRIMARY"),
-        new MessageButton().setCustomId("nemabot-icon").setLabel("Ajout Icone").setStyle("SECONDARY")
+        new MessageButton().setCustomId("nemabot-icon").setLabel("Ajout Icone").setStyle("SECONDARY"),
+        new MessageButton().setCustomId("nemabot-delete").setLabel("Supprimer").setStyle("DANGER")
     )
     const actionRowColors = new MessageActionRow().addComponents(
         new MessageSelectMenu()
@@ -35,11 +38,13 @@ async function sendConfig(channel, bot){
     channels.sort((a, b) => b.name.startsWith("sutom") - a.name.startsWith("sutom") )
     channels.sort((a, b) => b.name.startsWith("bla-bla") - a.name.startsWith("bla-bla") )
     channels.sort((a, b) => b.name.startsWith("annonce") - a.name.startsWith("annonce") )
+
     const channelsOptions = new Array()
     for(let i=0 ; i<channels.size ; i++){
-        if(i == 25) break;
+        if(i == 24) break;
         channelsOptions.push({label: channels.at(i).name, value: channels.at(i).id})
     }
+    channelsOptions.push({label: "Autre ...", value: 0})
     
     const actionEnvoyer = new MessageActionRow().addComponents(
         new MessageSelectMenu()
@@ -48,7 +53,20 @@ async function sendConfig(channel, bot){
             .addOptions(channelsOptions)
     )
 
-    prevConfig = await channel.send({embeds: [config], components: [actionRowButtons, actionRowColors, actionEnvoyer]})
+    prevConfig = await channel.send({embeds: [config], components: [actionRowButtons, actionRowButtonsTwo, actionRowColors, actionEnvoyer]})
+}
+
+async function reset(){
+    await prevMessage.delete()
+    await prevConfig.delete()
+    if(prevConfigAction) prevConfigAction.delete()
+
+    channelId = undefined
+    authorId = undefined
+    actionEnCours = undefined
+    prevMessage = undefined
+    prevConfig = undefined
+    prevConfigAction = undefined
 }
 
 module.exports = class EmbedCreator{
@@ -87,6 +105,12 @@ module.exports = class EmbedCreator{
         await interaction.deferReply()
         actionEnCours = interaction.customId
 
+        if(actionEnCours == "nemabot-delete"){
+            await reset()
+            embed = undefined
+            return interaction.deleteReply()
+        }
+
         let config
         if(actionEnCours == "nemabot-title"){
             config = new MessageEmbed().setTitle("Configuration du Titre").setColor("BLURPLE").setDescription("Tapes le nouveau titre que tu souhaites !")
@@ -112,7 +136,8 @@ module.exports = class EmbedCreator{
     }
 
     static async execAction(message, bot){
-        prevConfigAction.delete()
+        await prevConfigAction.delete()
+        prevConfigAction = undefined
         message.delete()
 
         if(actionEnCours == "nemabot-title"){
@@ -125,6 +150,9 @@ module.exports = class EmbedCreator{
             embed.setImage(message.content)
         }else if(actionEnCours == "nemabot-icon"){
             embed.setThumbnail("https://nemaides.fr/logo.png")
+        }else if(actionEnCours == "nemabot-send"){
+            message.values = new Array(message.content)
+            return this.sendFinal(message, bot)
         }
         actionEnCours = undefined
 
@@ -132,21 +160,23 @@ module.exports = class EmbedCreator{
     }
 
     static async sendFinal(interaction, bot){
-        await interaction.deferReply()
-        await prevMessage.delete()
-        await prevConfig.delete()
-        channelId = undefined
-        authorId = undefined
-        actionEnCours = undefined
-        prevMessage = undefined
-        prevConfig = undefined
-        prevConfigAction = undefined
+        if(actionEnCours != "nemabot-send") await interaction.deferReply()
+        
+        if(interaction.values[0] == 0){
+            const config = new MessageEmbed().setTitle("Configuration du Salon").setColor("BLURPLE").setDescription("Tapes l'identifiant du salon dans lequel envoyer le message !")
+                .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
+            prevConfigAction = await interaction.channel.send({embeds: [config]})
+            actionEnCours = "nemabot-send"
+            return interaction.deleteReply()
+        }
+
+        await reset()
 
         embed.setTimestamp(new Date())
 
         const chan = await bot.channels.fetch(interaction.values[0])
-        chan.send({embeds: [embed]})
+        chan.send({embeds: [embed]}).then(() => embed = undefined)
 
-        interaction.deleteReply()
+        if(actionEnCours != "nemabot-send") interaction.deleteReply()
     }
 }
