@@ -14,7 +14,7 @@ async function sendConfig(channel, bot){
     const config = new MessageEmbed()
         .setTitle("Configuration du Message Embed")
         .setColor("BLURPLE")
-        .setDescription("Choisis l'action que tu souhaites effectuer :\n\n*Un message ne peut pas avoir une image **ET** une icone ...*")
+        .setDescription("Choisis l'action que tu souhaites effectuer :\n\n*Un message ne peut pas avoir une image ET une icone ...*")
         .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
 
     const actionRowButtons = new MessageActionRow().addComponents(
