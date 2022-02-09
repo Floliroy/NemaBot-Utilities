@@ -44,7 +44,7 @@ async function sendConfig(channel, bot){
         if(i == 24) break;
         channelsOptions.push({label: channels.at(i).name, value: channels.at(i).id})
     }
-    channelsOptions.push({label: "Autre ...", value: 0})
+    channelsOptions.push({label: "Autre ...", value: "other"})
     
     const actionEnvoyer = new MessageActionRow().addComponents(
         new MessageSelectMenu()
@@ -162,7 +162,7 @@ module.exports = class EmbedCreator{
     static async sendFinal(interaction, bot){
         if(actionEnCours != "nemabot-send") await interaction.deferReply()
         
-        if(interaction.values[0] == 0){
+        if(interaction.values[0] == "other"){
             const config = new MessageEmbed().setTitle("Configuration du Salon").setColor("BLURPLE").setDescription("Tapes l'identifiant du salon dans lequel envoyer le message !")
                 .setFooter({ text: bot.user.username, iconURL: bot.user.displayAvatarURL({ dynamic: true }) })
             prevConfigAction = await interaction.channel.send({embeds: [config]})
