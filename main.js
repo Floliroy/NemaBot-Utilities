@@ -19,7 +19,7 @@ const commandsFile = require('./modules/commands')
 bot.once("ready", async function(){
     console.log(`Démmarage en tant que ${bot.user.tag}`)
 
-    bot.user.setPresence({activities: [{type: "WATCHING", name: "NemaidesTFT", url: "https://www.twitch.tv/nemaidestft"}]})
+    bot.user.setPresence({activities: [{type: "WATCHING", name: "Nema", url: "https://www.twitch.tv/nema"}]})
 
     bot.guilds.cache.get(process.env.DISCORD_GUILD)?.commands.fetch().then(async function(commands){
         let command = commands.find(c => c.name == "tirage")
